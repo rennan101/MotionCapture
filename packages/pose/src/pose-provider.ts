@@ -220,3 +220,6 @@ export class PoseProviderRegistry {
     return this.providers.get(id);
   }
 }
+
+export * from "./mediapipe-mapper.js";
+

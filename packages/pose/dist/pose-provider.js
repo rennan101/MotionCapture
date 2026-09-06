@@ -1,3 +1,11 @@
+export const PROVIDER_IDS = [
+    "auto",
+    "mediapipe",
+    "rtmpose",
+    "nvidia",
+    "custom",
+    "unknown",
+];
 export class PoseProviderRegistry {
     options;
     providers = new Map();
@@ -10,6 +18,9 @@ export class PoseProviderRegistry {
     getAvailable() {
         return Array.from(this.providers.values());
     }
+    /// Return the real provider id the pipeline should use.
+    /// Explicit selections must be registered and available.
+    /// `Auto` must be resolved by the registry, not by the consumer.
     resolveSelection(selection) {
         if (selection !== "auto") {
             const m = this.providers.get(selection);
@@ -42,4 +53,5 @@ export class PoseProviderRegistry {
         return this.providers.get(id);
     }
 }
+export * from "./mediapipe-mapper.js";
 //# sourceMappingURL=pose-provider.js.map

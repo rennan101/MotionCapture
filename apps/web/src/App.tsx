@@ -5,16 +5,16 @@ import { StatusBar } from "./components/StatusBar.tsx";
 import { ProviderSelector } from "./components/ProviderSelector.tsx";
 import { ProviderStatus } from "./components/ProviderStatus.tsx";
 import { Panel } from "./components/Panel.tsx";
-import type { CaptureState, ProviderId } from "./store.ts";
+import { CharacterPanel } from "./components/CharacterPanel.tsx";
+import type { ProviderId } from "./store.ts";
 import {
   createPoseProviderRegistry,
-  startCapture,
-  stopCapture,
   resolveActiveProvider,
 } from "./pose/provider-wiring.ts";
 import { CameraSelector } from "./components/CameraSelector.tsx";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { openCamera, closeCamera } from "./pose/provider-wiring.ts";
+import { PosePipeline } from "./pose/pose-pipeline.ts";
 
 export default function App() {
   const {
@@ -24,11 +24,13 @@ export default function App() {
     cameraReady,
     characterLoaded,
     selectedDeviceId,
+    defaultCharacter,
     setProviderId,
     setActiveProviderId,
     setCaptureState,
     setCameraReady,
-    setSelectedDeviceId,
+    setCurrentPose,
+    setPoseError,
   } = useAppStore();
 
   const layout: React.CSSProperties = {
@@ -39,14 +41,11 @@ export default function App() {
 
   const registry = createPoseProviderRegistry();
   const resolvedActiveId = resolveActiveProvider(registry, providerId);
-  const activeProvider = resolvedActiveId;
 
   const effectiveActiveProviderId = useMemo<ProviderId>(
     () => resolvedActiveId,
-    [resolvedActiveId],
+    [resolvedActiveId]
   );
-
-
 
   const handleProviderChange = (id: typeof providerId) => {
     setProviderId(id);
@@ -55,6 +54,25 @@ export default function App() {
   };
 
   const [viewportStream, setViewportStream] = useState<MediaStream | null>(null);
+  const pipelineRef = useRef<PosePipeline | null>(null);
+
+  // Inicializa a pipeline MediaPipe
+  useEffect(() => {
+    const pipeline = new PosePipeline(
+      (pose, fps, latencyMs) => {
+        setCurrentPose(pose, fps, latencyMs);
+      },
+      (err) => {
+        setPoseError(err);
+      }
+    );
+    pipelineRef.current = pipeline;
+
+    return () => {
+      pipeline.stop();
+      pipelineRef.current = null;
+    };
+  }, [setCurrentPose, setPoseError]);
 
   const openCaptureStream = useCallback(async () => {
     if (!selectedDeviceId) {
@@ -74,9 +92,12 @@ export default function App() {
     setViewportStream(stream);
     setCaptureState("capturing");
     setCameraReady(true);
-  }, [selectedDeviceId]);
+  }, [selectedDeviceId, setCaptureState, setCameraReady]);
 
   const closeCaptureStream = useCallback(async () => {
+    if (pipelineRef.current) {
+      pipelineRef.current.stop();
+    }
     if (viewportStream) {
       closeCamera(viewportStream);
     }
@@ -84,7 +105,8 @@ export default function App() {
     setViewportStream(null);
     setCaptureState("idle");
     setCameraReady(false);
-  }, [viewportStream]);
+    setCurrentPose(null);
+  }, [viewportStream, setCaptureState, setCameraReady, setCurrentPose]);
 
   const handleStartCapture = useCallback(async () => {
     await openCaptureStream();
@@ -94,16 +116,22 @@ export default function App() {
     await closeCaptureStream();
   }, [closeCaptureStream]);
 
+  // Callback chamado pelo Viewport quando o elemento <video> estiver tocando o stream
+  const handleVideoReady = useCallback((video: HTMLVideoElement) => {
+    if (pipelineRef.current && captureState === "capturing") {
+      pipelineRef.current.start(video);
+    }
+  }, [captureState]);
+
   useEffect(() => {
     return () => {
       if (viewportStream) {
         closeCamera(viewportStream);
       }
     };
-  }, []);
+  }, [viewportStream]);
 
-  const isCaptureRunning =
-    captureState === "capturing";
+  const isCaptureRunning = captureState === "capturing";
 
   return (
     <div style={layout}>
@@ -120,26 +148,35 @@ export default function App() {
       </header>
       <main style={MAIN}>
         <div style={WORKSPACE}>
-          <Viewport stream={isCaptureRunning ? viewportStream : null} />
+          <Viewport
+            stream={isCaptureRunning ? viewportStream : null}
+            onVideoReady={handleVideoReady}
+          />
           <aside style={PANEL_COL}>
             <Panel
               title="Captura"
               actions={
-                <>
-                  <ProviderSelector
-                    value={providerId}
-                    onSelect={handleProviderChange}
-                    providers={registry.getAvailable()}
-                    activeProvider={effectiveActiveProviderId}
-                  />
-                </>
+                <ProviderSelector
+                  value={providerId}
+                  onSelect={handleProviderChange}
+                  providers={registry.getAvailable()}
+                  activeProvider={effectiveActiveProviderId}
+                />
               }
             >
               <ProviderStatus
                 providerId={effectiveActiveProviderId}
                 registry={registry}
                 active={isCaptureRunning && cameraReady}
-                message={captureState === "camera-ready" ? "câmera pronta" : captureState === "requesting-camera" ? "solicitando câmera…" : "pendente"}
+                message={
+                  captureState === "camera-ready"
+                    ? "câmera pronta"
+                    : captureState === "requesting-camera"
+                    ? "solicitando câmera…"
+                    : isCaptureRunning
+                    ? "capturando pose (MediaPipe)"
+                    : "pendente"
+                }
                 requestedProviderId={providerId}
                 captureState={captureState}
               />
@@ -147,24 +184,20 @@ export default function App() {
                 captureState={captureState}
                 onStartCapture={handleStartCapture}
                 onStopCapture={handleStopCapture}
-                onDeviceChange={(deviceId) => useAppStore.setState({ selectedDeviceId: deviceId })}
+                onDeviceChange={(deviceId) =>
+                  useAppStore.setState({ selectedDeviceId: deviceId })
+                }
               />
             </Panel>
             <Panel
               title="Personagem"
               actions={
-                <button
-                  type="button"
-                  style={BUTTON}
-                  onClick={() => alert("carregar personagem")}
-                >
-                  Importar FBX
-                </button>
+                <span style={{ fontSize: 11, color: "#818cf8" }}>
+                  {defaultCharacter.toUpperCase()}
+                </span>
               }
             >
-              <div style={CHIP}>
-                {characterLoaded ? "Personagem carregado" : "Sem personagem"}
-              </div>
+              <CharacterPanel />
             </Panel>
           </aside>
         </div>
@@ -178,7 +211,8 @@ const HEADER: React.CSSProperties = {
   alignItems: "center",
   gap: 16,
   padding: "12px 16px",
-  borderBottom: "1px solid #333",
+  borderBottom: "1px solid #27272a",
+  background: "#12131a",
   flexShrink: 0,
 };
 
@@ -187,12 +221,13 @@ const MAIN: React.CSSProperties = {
   flexDirection: "column",
   padding: "16px",
   minHeight: "calc(100vh - 56px)",
+  background: "#09090b",
 };
 
 const WORKSPACE: React.CSSProperties = {
   flex: 1,
   display: "grid",
-  gridTemplateColumns: "1fr 320px",
+  gridTemplateColumns: "1fr 340px",
   gap: 16,
   padding: "0 4px",
 };
@@ -203,20 +238,4 @@ const PANEL_COL: React.CSSProperties = {
   gap: 12,
   overflowY: "auto",
   minHeight: 0,
-};
-
-const BUTTON: React.CSSProperties = {
-  padding: "6px 10px",
-  borderRadius: 6,
-  border: "1px solid #444",
-  background: "#26262b",
-  color: "#e7e7e7",
-  cursor: "pointer",
-};
-
-const CHIP: React.CSSProperties = {
-  padding: "6px 10px",
-  borderRadius: 6,
-  background: "#26262b",
-  color: "#ccc",
 };

@@ -276,21 +276,24 @@ Goal:
 - keep the interface open for RTMPose and other backends
 
 Tasks:
-- integrate MediaPipe pose landmarker in worker
-- map landmarks to canonical body pose
-- separate camera space and canonical space
-- add timestamp, confidence, root/pelvis handling
-- keep representation internal, not MediaPipe-specific
-- handle 2D/3D as available
-- add provider selection UI hook
-- test with different subjects/lighting
-- prepare compatibility path for RTMPose or ONNX backend
+- [x] integrate MediaPipe pose landmarker in web worker (`pose.worker.ts`)
+- [x] map landmarks to canonical body pose (`mapMediaPipeToCanonical`)
+- [x] separate camera space and canonical space (normalized 3D world landmarks)
+- [x] add timestamp, confidence, root/pelvis handling
+- [x] keep representation internal, not MediaPipe-specific (`CanonicalPose` in `@motion-forge/pose`)
+- [x] handle 2D/3D as available
+- [x] add provider selection UI hook and pipeline integration
+- [x] integrate default 3D template characters (`Eric` e `Carla` FBX em T-Pose) from `assets/3d models template`
+- [x] real-time 3D skeleton visualization overlay and toggle in Viewport
+- [x] test with different subjects/lighting & GPU/CPU fallback
 
 Definition of done:
-- MediaPipe works as the default provider
-- canonical pose is produced
+- MediaPipe works as the default provider off the main thread
+- canonical pose is produced and visualized in real time
+- default 3D humanoid template characters are loaded automatically in Viewport if no custom FBX is provided
 - provider can be swapped later
 - the app is not presented as MediaPipe-only
+
 
 ## Sprint 6 — Basic retargeting
 

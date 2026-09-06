@@ -1,4 +1,5 @@
 export type ProviderId = "auto" | "mediapipe" | "rtmpose" | "nvidia" | "custom" | "unknown";
+export declare const PROVIDER_IDS: readonly ProviderId[];
 export type Platform = "web" | "macos" | "windows" | "linux";
 export interface ProviderCapability {
     supportsGPU: boolean;
@@ -14,6 +15,15 @@ export interface ProviderMetadata {
     available: boolean;
     capability: ProviderCapability;
     reasonUnavailable?: string;
+}
+export interface CaptureSource {
+    type: "webcam";
+    deviceId?: string;
+}
+export interface FrameData {
+    type: "video";
+    timestamp: number;
+    data?: unknown;
 }
 export interface BoneCapturePoint {
     position: [number, number, number];
@@ -57,15 +67,6 @@ export interface PoseProviderAsync {
     stopCapture(): Promise<void>;
     dispose(): Promise<void>;
 }
-export interface CaptureSource {
-    type: "webcam";
-    deviceId?: string;
-}
-export interface FrameData {
-    type: "video";
-    timestamp: number;
-    data?: unknown;
-}
 export interface PoseProviderLifecycle {
     initialize(config?: Record<string, unknown>): Promise<void>;
     supportsPlatform(platform: Platform): boolean;
@@ -91,4 +92,5 @@ export declare class PoseProviderRegistry {
     resolveSelection(selection: ProviderId): ProviderId;
     getMetadata(id: ProviderId): ProviderMetadata | undefined;
 }
+export * from "./mediapipe-mapper.js";
 //# sourceMappingURL=pose-provider.d.ts.map
