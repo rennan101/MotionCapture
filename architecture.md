@@ -190,30 +190,141 @@ O navegador pode executar inferência localmente, sem enviar o vídeo para servi
 
 # 5. IA de Pose
 
-## Primeira implementação
+## 5.1 Decisão principal
 
-Utilizar **MediaPipe Pose Landmarker** como baseline.
+O projeto não deve ficar preso a um único modelo de pose.
 
-Vantagens:
+A escolha inicial é **MediaPipe Pose Landmarker** como baseline, mas o produto deve ser estruturado como uma **plataforma de mocap com troca de motores de captura**, não como um aplicativo dependente do MediaPipe.
 
-- gratuito;
-- execução local;
-- funciona no browser;
-- relativamente leve;
-- adequado para tempo real;
-- permite uma primeira versão sem treinar uma IA própria.
+O usuário deve poder escolher, na aplicação:
+
+```text
+Motor de captura
+  ○ Auto
+  ○ MediaPipe
+  ○ RTMPose
+  ○ NVIDIA RTX
+  ○ Modelo personalizado
+```
+
+## 5.2 Pipeline de pose
+
+O pipeline de pose é:
+
+```text
+Webcam
+ ↓
+PoseProvider
+ ↓
+Canonical Pose 3D
+ ↓
+Retarget
+ ↓
+IK
+ ↓
+Motion Cleanup
+ ↓
+Blender / Unity / Unreal
+```
+
+Em mais detalhe:
+
+```text
+              Webcam
+                 │
+                 ▼
+          ┌──────────────┐
+          │  PoseProvider │
+          └──────┬───────┘
+                 │
+     ┌───────────┼───────────┐
+     ▼           ▼           ▼
+MediaPipe     RTMPose     NVIDIA
+Web/CPU/GPU  Desktop/GPU  NVIDIA GPU
+     │           │           │
+     └───────────┼───────────┘
+                 ▼
+          ┌──────────────┐
+          │ Canonical Pose│
+          │     3D        │
+          └──────┬───────┘
+                 ▼
+          ┌──────────────┐
+          │    Retarget   │
+          └──────┬───────┘
+                 ▼
+          ┌──────────────┐
+          │      IK       │
+          └──────┬───────┘
+                 ▼
+          ┌──────────────┐
+          │ Motion Cleanup│
+          └──────┬───────┘
+                 ▼
+        Blender / Unity / Unreal
+```
+
+A câmera é o ponto de entrada. O Provider é o ponto de extensão.
+
+## 5.3 Implementação por versão
+
+### MVP
+
+```text
+MediaPipe → Canonical 3D Skeleton → Retarget → IK
+```
+
+### V2
+
+```text
+MediaPipe + RTMPose → comparar qualidade
+```
+
+### V3
+
+```text
+NVIDIA BodyPose3DNet como backend opcional para máquinas RTX
+```
+
+### V4
+
+```text
+modelo próprio de 3D pose → maior qualidade e independência de terceiros
+```
+
+## 5.4 Interface PoseProvider
 
 A arquitetura deve manter o Pose Provider desacoplado:
 
 ```text
 PoseProvider
 ├── MediaPipeProvider
+├── RTMPoseProvider
+├── NVIDIAProvider
 ├── ONNXProvider
 ├── NativeProvider
-└── FutureCustomProvider
+└── CustomProvider
 ```
 
+A interface deve definir:
+
+- entrada de frame/câmera;
+- saída de pose normalizada e confiança;
+- configuração de modelo e modo;
+- capacidade de fallback entre backends;
+- indicação de suporte a GPU/CPU/Web.
+
 Assim podemos substituir o modelo posteriormente sem reescrever o sistema inteiro.
+
+## 5.5 Seleção automática
+
+O modo **Auto** deve escolher o melhor provider disponível para o dispositivo:
+
+- web: MediaPipe ou outro backend compatível com browser;
+- desktop com GPU NVIDIA RTX: tentar backend NVIDIA quando disponível;
+- demais casos: usar o melhor backend disponível para a plataforma.
+
+Isso mantém a aplicação simples para o usuário e, ao mesmo tempo, abre a porta para backends mais avançados no futuro.
 
 ---
 

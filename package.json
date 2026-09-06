@@ -1,0 +1,17 @@
+{
+  "name": "motion-forge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:web": "pnpm -C apps/web dev",
+    "dev:desktop": "pnpm -C apps/desktop dev",
+    "build:web": "pnpm -C apps/web build",
+    "build:desktop": "pnpm -C apps/desktop build",
+    "build": "pnpm -r build"
+  },
+  "packageManager": "pnpm@12.3.4",
+  "pnpm": {
+    "packageExtensions": {}
+  }
+}

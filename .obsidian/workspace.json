@@ -1,0 +1,210 @@
+{
+  "main": {
+    "id": "712fa3f5ebd9b844",
+    "type": "split",
+    "children": [
+      {
+        "id": "f0c9883410eb2636",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "7afe80e56ee4f190",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/SPRINTS_WEB.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "SPRINTS_WEB"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "87ef8253f308fad3",
+    "type": "split",
+    "children": [
+      {
+        "id": "e192efb81729fa5f",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "45ddc6dcd4b2a7f6",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Explorador de arquivos"
+            }
+          },
+          {
+            "id": "ceef168bc148a3b3",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Procurar"
+            }
+          },
+          {
+            "id": "984c779c161069d2",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-bookmark",
+              "title": "Marcadores"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "df5fc3b84f7042c2",
+    "type": "split",
+    "children": [
+      {
+        "id": "589768c5eee65367",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "f2ad9f512d585d12",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "docs/SPRINTS_WEB.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Links inversos"
+            }
+          },
+          {
+            "id": "a7b0d564f81c4d34",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "docs/SPRINTS_WEB.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Links de saída"
+            }
+          },
+          {
+            "id": "68b153d00c964225",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Etiquetas"
+            }
+          },
+          {
+            "id": "5b769a3607f76e8c",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "Todas as propriedades"
+            }
+          },
+          {
+            "id": "9ce29eba75d6a59c",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "docs/SPRINTS_WEB.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Sumário"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Abrir a troca rápida": false,
+      "graph:Abrir visualização em gráfico": false,
+      "canvas:Criar novo canvas": false,
+      "daily-notes:Abrir a nota de hoje": false,
+      "templates:Inserir modelo": false,
+      "command-palette:Abrir paleta de comandos": false,
+      "bases:Criar nova base": false
+    }
+  },
+  "active": "7afe80e56ee4f190",
+  "lastOpenFiles": [
+    "apps/web/src/App.css",
+    "apps/web/src/components/StatusBar.tsx",
+    "docs/SPRINTS_DESKTOP_MACOS.md",
+    "docs/SPRINTS_WEB.md",
+    "apps/web/src/components/Viewport.tsx",
+    "apps/web/src/components",
+    "apps/web/src/store.ts",
+    "apps/web/src/main.tsx",
+    "apps/web/src/App.tsx",
+    "apps/web/src/vite-env.d.ts",
+    "apps/web/src",
+    "apps/web/index.html",
+    "apps/web/vite.config.ts",
+    "docs/MOTION_FORGE_PLAN.md",
+    "docs/TASK_AUTOMODE_VALIDATION.md",
+    "docs/POSE_PROVIDER_CONTRACT.md"
+  ]
+}
