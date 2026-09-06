@@ -52,10 +52,9 @@ Motor de captura
   ○ Modelo personalizado
 ```
 
-`Auto` must select the best available backend for the current device and runtime:
+`Auto` should choose the best available backend for the current device:
 - web: browser-compatible backend
-- desktop with NVIDIA RTX: optional NVIDIA backend when available
-- otherwise: best available backend for the platform
+- desktop: best available backend for the machine, with NVIDIA optional on RTX hardware
 
 ## Provider capabilities
 
@@ -63,14 +62,14 @@ Each provider should declare:
 
 - `id`
 - `label`
-- `supportedPlatforms`
+- `available`
 - `supportsGPU`
 - `supportsCPU`
 - `supportsWeb`
 - `supportsDesktop`
 - `preferredBackend`
 - `fallbackPolicy`
-- `modelVariant` if applicable
+- `reasonUnavailable`, when relevant
 
 Examples:
 
@@ -125,7 +124,7 @@ The canonical result should include:
 
 A provider implementation should support at least these operations:
 
-- `initialize(config)`
+- `initialize(config?)`
 - `supportsPlatform(platform)`
 - `startCapture(source)`
 - `processFrame(frame)`
@@ -134,14 +133,54 @@ A provider implementation should support at least these operations:
 
 And at least these queries:
 
-- `getCapabilities()`
-- `getCurrentProviderId()`
-- `getHealth/status()`
+- `getMetadata()`
 
 The pipeline must be able to:
 - select a provider by id or by `Auto`
 - fall back if the chosen provider is unavailable
 - report why a provider was chosen or rejected
+
+### Current contract (Motion Forge, current code)
+
+The current npm package is `@motion-forge/pose` (`packages/pose`). It currently defines:
+
+- `ProviderId`
+  - `"auto"`, `"mediapipe"`, `"rtmpose"`, `"nvidia"`, `"custom"`, `"unknown"`
+  - `PROVIDER_IDS` is exported as the canonical ordered list
+- `Platform`
+  - `"web"`, `"macos"`, `"windows"`, `"linux"`
+- `ProviderCapability`
+  - `supportsGPU`
+  - `supportsCPU`
+  - `supportsWeb`
+  - `supportsDesktop`
+  - `preferredBackend`
+  - `fallbackPolicy: "none" | "cpu" | "another-shim"`
+- `ProviderMetadata`
+  - `id`, `label`, `available`, `capability`, optional `reasonUnavailable`
+- `CaptureSource`
+  - `type: "webcam"`, optional `deviceId`
+- `FrameData`
+  - `type: "video"`, `timestamp`, optional `data`
+- `BoneCapturePoint`
+  - `position: [number, number, number]`
+  - `confidence: number`
+- `CanonicalPose`
+  - `timestamp`, `overallConfidence`, and one `BoneCapturePoint` per canonical bone
+- `PoseResult`
+  - `canonical`, `providerId`, `latencyMs`, `warnings`
+- `PoseProviderAsync`
+  - `initialize(config?)`, `supportsPlatform(platform)`, `startCapture(source)`, `processFrame(frame)`, `stopCapture()`, `dispose()`
+- `PoseProviderLifecycle`
+  - lifecycle-only subset of the provider interface
+- `PoseProviderShims extends PoseProviderLifecycle`
+  - adds `processFrame(frame)` and `getMetadata()`
+- `PoseProviderRegistry`
+  - `register(metadata)`, `getAvailable()`, `resolveSelection(selection) -> ProviderId`, `getMetadata(id)`
+- `PoseProviderRegistryOptions`
+  - `platform`, optional `defaultProvider`, optional `availableProviders`
+
+The registry owns Auto logic. A consumer should not resolve `"auto"` itself before calling `resolveSelection`.
 
 ## Canonical pose normalization contract
 
@@ -192,6 +231,16 @@ The registry is responsible for:
 - instantiation
 - fallback
 
+### Current registry implementation
+
+Today the registry stores metadata only. It does **not** yet own live provider instances. That is intentional for the current sprint: the registry decides *which* provider should run, and later layers will own *how* it is created and started.
+
+Current registry behavior:
+- Explicit non-auto selections are accepted only if registered and available, otherwise `"unknown"`
+- Web Auto prefers MediaPipe if available
+- macOS/Windows Auto prefers NVIDIA if available, then MediaPipe if available, then the configured default
+- If no provider is usable, the resolved id is `"unknown"`
+
 ## Status reporting
 
 Each provider should be able to report:
@@ -216,6 +265,26 @@ MVP needs:
 - stable canonical output even if the provider changes
 
 The goal is architectural readiness, not full multi-backend parity on day one.
+
+### Current MVP reality
+
+Current web code wires the contract through:
+
+- Zustand store `ProviderId` state
+- `createPoseProviderRegistry()` configured for `platform: "web"`
+- `ProviderSelector` with fixed options and an unavailable caption
+- `ProviderStatus` showing the resolved active backend
+- `provider-wiring.ts` with registry creation, session helpers, and placeholder `startCapture` / `stopCapture`
+
+The web app currently shows:
+
+- Auto
+- MediaPipe
+- RTMPose — não disponível
+- NVIDIA RTX — não disponível
+- Modelo personalizado — não disponível
+
+That is the exact behavior we want for MVP readiness.
 
 ## Future extensions
 

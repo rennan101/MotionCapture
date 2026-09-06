@@ -38,14 +38,17 @@ Supported backends for web:
 The user can choose:
 
 ```text
-Pose engine
+Motor de captura
   ○ Auto
   ○ MediaPipe
   ○ RTMPose
-  ○ Custom model
+  ○ NVIDIA RTX
+  ○ Modelo personalizado
 ```
 
 `Auto` should pick the best browser-compatible backend.
+
+In the current web MVP, that means `Auto` prefers MediaPipe when it is available.
 
 ## Shared concerns
 
@@ -118,39 +121,67 @@ Definition of done:
 - a character can be loaded and viewed
 - no pose yet
 
-## Sprint 3 — Pose provider interface
+## Sprint 3 — Pose provider interface + motor de captura UI
 
 Goal:
-- define a pose abstraction before implementation
+- define the pose abstraction before implementation
 - prepare for multiple providers, not only MediaPipe
-- add the UI for selecting the pose engine
+- expose `Motor de captura` selection with Autonomous `Auto` selection
 
 Tasks:
-- define PoseProvider interface
-- define pose result types
-- define provider config types
+- define PoseProvider interface in `@motion-forge/pose`
+- define provider result types:
+  - `CaptureSource`
+  - `FrameData`
+  - `BoneCapturePoint`
+  - `CanonicalPose`
+  - `PoseResult`
 - define provider selection model:
   - Auto
   - MediaPipe
   - RTMPose
-  - Custom
-- define confidence and landmark representation in internal model
-- plan worker message protocol
-- implement a no-op or test provider first
-- document how a real provider will be plugged in
+  - NVIDIA RTX
+  - Modelo personalizado
+- define provider capability and metadata types:
+  - `ProviderCapability`
+  - `ProviderMetadata`
+- define `Platform` identity for web and desktop
+- define provider lifecycle + shim interfaces:
+  - `PoseProviderAsync`
+  - `PoseProviderLifecycle`
+  - `PoseProviderShims`
+- define `PoseProviderRegistry`:
+  - `register(metadata)`
+  - `getAvailable()`
+  - `resolveSelection(selection)`
+  - `getMetadata(id)`
+- make `Auto` a real registry responsibility, not UI-only logic
+- implement a no-op/placeholder provider wiring first:
+  - registry creation for `platform: "web"`
+  - fixed provider list with realistic availability
+  - `startCapture` / `stopCapture` session helpers
+  - Auto resolution to MediaPipe on web when available
 - add provider selection UI controls:
-  - dropdown or segmented control for Motor de captura
-  - Auto option behavior
+  - segmented radio panel for `Motor de captura`
+  - `Auto` option behavior
   - disabled state when a provider is unavailable
-  - short status text for current backend
-- connect provider selection to the provider registry
-- keep provider choice local to the session and settings where appropriate
+  - inactive caption like `não disponível`
+  - active backend indicator in the capture panel
+  - short status text for the current backend
+  - override Auto by selecting a specific provider
+- pass the registry into the status components so the UI reflects the resolved backend
+- keep provider choice local to the session where appropriate
+- document how a real provider will be plugged in
+- add a task/issue to validate Auto behavior on web and desktop
 
 Definition of done:
 - provider interface is stable enough to implement
 - web app can talk to a provider abstraction
-- provider selection is part of the design, not an afterthought
-- user can choose between Auto, MediaPipe, RTMPose, and Custom where those backends exist
+- the full `Motor de captura` selector is part of the design, not an afterthought
+- `Auto` selects a usable provider on web
+- unavailable providers are visible and disabled
+- the status UI shows which backend was selected by Auto
+- provider selection is ready for the real webcam/worker pipeline in Sprint 4
 
 ## Sprint 4 — Webcam and worker pipeline
 

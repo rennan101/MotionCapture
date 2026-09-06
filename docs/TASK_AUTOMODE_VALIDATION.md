@@ -23,6 +23,9 @@ The goal is to prove that:
 - [ ] Provider selection survives app restart only if settings support it
 - [ ] Fallback behavior does not crash the capture pipeline
 - [ ] Diagnostics show why Auto chose a provider or why a provider was skipped
+- [ ] Auto resolution is performed by `PoseProviderRegistry.resolveSelection("auto")`
+- [ ] The status bar shows `Auto → <resolved provider>` when Auto is on
+- [ ] The capture panel shows the resolved backend, not just the raw selection value
 
 ## Web validation steps
 
@@ -79,6 +82,25 @@ For MVP, validate at least:
 
 For MVP, “if available” means the UI should handle absence gracefully.
 
+## Provider matrix — current web implementation
+
+In the current web MVP, the registry is configured as:
+
+| Provider  | Available | Reason |
+|-----------|-----------|--------|
+| Auto      | yes       | selects MediaPipe on web |
+| MediaPipe | yes       | default web backend |
+| RTMPose   | no        | Web backend não disponível neste MVP |
+| NVIDIA RTX| no        | NVIDIA RTX não disponível neste MVP |
+| Custom    | no        | Modelo personalizado não configurado |
+
+That means current web validation is mostly a wiring sanity check:
+
+- Auto should resolve to MediaPipe
+- switching to MediaPipe manually should work
+- switching to an unavailable provider should not be possible while another provider is selected
+- switching back to Auto should re-resolve
+
 ## UI validation
 
 Validate that the UI shows:
@@ -99,6 +121,20 @@ For each run, capture:
 - dropped frames
 - latency estimate
 - any warnings
+
+## Current web diagnostics to assert
+
+From the current code, assert:
+
+- `createPoseProviderRegistry()` creates a web registry with MediaPipe available
+- `registry.resolveSelection("auto")` returns `"mediapipe"`
+- `registry.resolveSelection("rtmpose")` returns `"unknown"`
+- `ProviderSelector` shows `Motor de captura` with the expected five options
+- `ProviderSelector` disables unavailable options when another provider is selected
+- when `value === "auto"`, `ProviderSelector` highlights the resolved active provider
+- `ProviderStatus` and `StatusBar` reflect the resolved backend when a registry is passed
+- when `providerId === "auto"`, `StatusBar` shows `Provider: auto → MediaPipe`
+- when `providerId === "unknown"`, the status pills show the unavailable state without crashing
 
 This will help validate whether Auto is actually choosing well.
 

@@ -1,0 +1,21 @@
+{
+  "name": "@motion-forge/pose",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/pose-provider.js",
+  "types": "./dist/pose-provider.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/pose-provider.d.ts",
+      "import": "./dist/pose-provider.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --build"
+  },
+  "dependencies": {
+    "@motion-forge/core": "workspace:*",
+    "typescript": "^5.7.0"
+  }
+}

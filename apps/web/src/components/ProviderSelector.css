@@ -1,0 +1,6 @@
+/* ProviderSelector.css is not used by ProviderSelector.tsx for now.
+   Styles are inlined for simplicity. */
+
+:root {
+  --provider-auto: #7fe3b4;
+}

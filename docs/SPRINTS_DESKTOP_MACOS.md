@@ -146,6 +146,27 @@ Definition of done:
 - humanoid mapping is produced
 - user can review/confirm mapping
 
+## Sprint 3 — Character importer and skeleton detection
+
+Goal:
+- import FBX with an existing skeleton
+- detect bones and map them to canonical humanoid
+
+Tasks:
+- add FBX import path, either via Rust native layer or existing importer approach
+- read scene, meshes, armatures, bones
+- analyze bone names and hierarchy
+- build a detected skeleton model
+- map detected bones to canonical humanoid bones
+- generate a rig profile for the imported character
+- add UI for review and correction
+- support T-pose or rest pose concept
+
+Definition of done:
+- FBX with skeleton can be imported
+- humanoid mapping is produced
+- user can review/confirm mapping
+
 ## Sprint 4 — Pose provider and camera integration
 
 Goal:
@@ -167,10 +188,11 @@ Tasks:
 - add provider selection UI in the desktop app:
   - Motor de captura selector
   - Auto, MediaPipe, RTMPose, NVIDIA RTX, Custom options
-  - disabled/hidden options when a backend is unavailable
+  - disabled options when a backend is unavailable
   - current backend indicator in capture settings
   - clear message when a provider cannot be used
 - wire selected provider into capture and inference pipeline
+- reuse the same `@motion-forge/pose` registry and provider ids as web where practical
 
 Definition of done:
 - webcam works on macOS
@@ -178,6 +200,7 @@ Definition of done:
 - inference does not block UI
 - provider selection is part of the architecture, not a MediaPipe lock-in
 - user can switch provider from the UI where backends are available
+- `Auto` resolves to a usable desktop backend, with NVIDIA optional on RTX hardware
 
 ## Sprint 5 — Retargeting on desktop
 

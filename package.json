@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev:web": "pnpm -C apps/web dev",
+    "dev:web:standalone": "cd apps/web && /opt/homebrew/bin/node node_modules/vite/bin/vite.js --port 5173",
     "dev:desktop": "pnpm -C apps/desktop dev",
     "build:web": "pnpm -C apps/web build",
     "build:desktop": "pnpm -C apps/desktop build",
@@ -12,6 +13,8 @@
   },
   "packageManager": "pnpm@12.3.4",
   "pnpm": {
-    "packageExtensions": {}
+    "allowBuilds": {
+      "esbuild": true
+    }
   }
 }

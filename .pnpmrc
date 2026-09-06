@@ -1,0 +1,3 @@
+workspace=true
+shamefully-hoist=true
+allow-builds.esbuild=true

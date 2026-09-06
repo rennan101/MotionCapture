@@ -1,0 +1,7 @@
+# Node.js installers / distributions
+node
+node.exe
+node_modules
+
+# pnpm
+pnpm-lock.yaml

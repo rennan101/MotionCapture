@@ -1,0 +1,26 @@
+5173
+
+Last validated after Sprint 3 wiring.
+
+Force flag added to the web dev script to reduce stale module graph issues during iterative preview work.
+
+Current active preview URL: http://localhost:5173
+Process: launchd job `motion-forge-preview`, pid 8692
+Vite binary used: /Users/rennan/Documents/Websites_Work/MotionCapture/node_modules/.pnpm/vite@6.4.3/node_modules/vite/bin/vite.js
+
+Verified:
+- `pnpm --silent -C apps/web exec tsc --noEmit` passes for apps/web
+- `pnpm --silent -C packages/core exec tsc --noEmit` passes for packages/core
+- `pnpm --silent -C packages/pose exec tsc --noEmit` passes for packages/pose
+
+Current docs aligned to code:
+- docs/POSE_PROVIDER_CONTRACT.md now matches packages/pose/src/pose-provider.ts
+- docs/SPRINTS_WEB.md Sprint 3 updated for full motor de captura UI + registry wiring
+- docs/SPRINTS_DESKTOP_MACOS.md Sprint 3 and 4 aligned to the shared pose package
+- docs/TASK_AUTOMODE_VALIDATION.md updated with current web matrix and web diagnostics
+
+Active dev server process is started with:
+
+  nohup pnpm --silent dev:web -- --port 5173 > "$HOME/.freebuff/preview-f1957dea-276c-4a43-b29a-4b2bf8c97765.log" 2>&1 &
+
+and registered under launchd as `motion-forge-preview`.

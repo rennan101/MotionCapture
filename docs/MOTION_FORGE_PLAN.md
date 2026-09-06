@@ -72,18 +72,32 @@ Keep the core logic independent of the UI and of the runtime:
 The user should be able to choose:
 
 ```text
-Pose engine
+Motor de captura
   ○ Auto
   ○ MediaPipe
   ○ RTMPose
   ○ NVIDIA RTX
-  ○ Custom model
+  ○ Modelo personalizado
 ```
 
 `Auto` should pick the best backend for the current device:
 - web: browser-compatible backend
 - desktop with NVIDIA RTX: optional NVIDIA backend when available
 - other cases: best available backend for the platform
+
+### Current provider contract
+
+The project has `@motion-forge/pose` (`packages/pose`) as the dedicated provider package.
+
+It defines:
+- `ProviderId`: `"auto"`, `"mediapipe"`, `"rtmpose"`, `"nvidia"`, `"custom"`, `"unknown"`
+- `Platform`: `"web"`, `"macos"`, `"windows"`, `"linux"`
+- provider capabilities and metadata
+- canonical pose types: `BoneCapturePoint`, `CanonicalPose`, `PoseResult`
+- provider interface: `PoseProviderAsync`, `PoseProviderLifecycle`, `PoseProviderShims`
+- `PoseProviderRegistry` including `Auto` resolution
+
+In the current web MVP, the registry is configured with MediaPipe available and the other backends unavailable, so `Auto` resolves to MediaPipe.
 
 ## 4. Architecture at a glance
 
@@ -111,34 +125,34 @@ In more detail:
               Webcam
                  │
                  ▼
-          ┌──────────────┐
-          │  PoseProvider │
-          └──────┬───────┘
-                 │
-     ┌───────────┼───────────┐
-     ▼           ▼           ▼
-MediaPipe     RTMPose     NVIDIA
-Web/CPU/GPU  Desktop/GPU  NVIDIA GPU
-     │           │           │
-     └───────────┼───────────┘
-                 ▼
-          ┌──────────────┐
-          │ Canonical Pose│
-          │     3D        │
-          └──────┬───────┘
-                 ▼
-          ┌──────────────┐
-          │    Retarget   │
-          └──────┬───────┘
-                 ▼
-          ┌──────────────┐
-          │      IK       │
-          └──────┬───────┘
-                 ▼
-          ┌──────────────┐
-          │ Motion Cleanup│
-          └──────┬───────┘
-                 ▼
+          ┌──────────────────┐
+          │  PoseProvider    │
+          └────────┬─────────┘
+                   │
+          ┌────────┼─────────────────┐
+          ↓        ↓                 ↓
+     MediaPipe  RTMPose          NVIDIA
+     Web/CPU/   Desktop/GPU      NVIDIA GPU
+     GPU       │                 │
+          └─────┴─────────────────┘
+                ▼
+          ┌──────────────────┐
+          │ Canonical Pose   │
+          │     3D           │
+          └────────┬─────────┘
+                   ▼
+          ┌──────────────────┐
+          │    Retarget      │
+          └────────┬─────────┘
+                   ▼
+          ┌──────────────────┐
+          │       IK         │
+          └────────┬─────────┘
+                   ▼
+          ┌──────────────────┐
+          │ Motion Cleanup   │
+          └────────┬─────────┘
+                   ▼
         Blender / Unity / Unreal
 ```
 

@@ -4,12 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --force",
     "build": "tsc -b && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
     "@motion-forge/core": "workspace:*",
+    "@motion-forge/pose": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "three": "^0.170.0",
