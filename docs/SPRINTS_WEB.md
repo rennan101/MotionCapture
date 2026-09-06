@@ -191,29 +191,82 @@ Goal:
 - honor the selected pose provider
 
 Tasks:
-- add camera selection UI
-- add video preview element
-- request camera permission
-- capture stream
-- create pose worker
-- send frames to worker
-- receive pose results
-- convert raw pose into internal canonical representation
-- handle low-confidence frames
-- add preview and status indicators
-- implement basic CPU fallback behavior
+- add camera selection UI:
+  - camera device list from `enumerateDevices`
+  - fallback label for devices without a friendly name
+  - select device before starting capture
+- add video preview element:
+  - render the active `MediaStream` in the viewport area or a capture panel
+  - keep preview separate from the 3D viewport until retargeting is ready
+- request camera permission:
+  - use `getUserMedia` with video-only constraints
+  - handle denial and missing `getUserMedia` gracefully
+- capture stream:
+  - `openCamera(deviceId?)` returns a `MediaStream` or null
+  - `closeCamera(stream)` stops all tracks
+  - teardown stream on unmount and on stop
+- create pose worker placeholder:
+  - prepare the worker message protocol for frame dispatch
+  - do not couple capture UI to inference code yet
+- send frames to worker:
+  - capture visible `<video>` frames at a stable cadence
+  - pass `FrameData` toward the worker pipeline once Sprint 5 is ready
+- receive pose results:
+  - keep the receiving path ready before the real backend is added
+- convert raw pose into internal canonical representation:
+  - use `@motion-forge/core` body pose types as the target shape
+  - keep conversion out of the UI layer
+- handle low-confidence frames:
+  - allow frames to be skipped or marked low confidence
+  - do not crash the capture loop on bad frames
+- add preview and status indicators:
+  - capture state machine: `idle`, `requestingcamera`, `camera-ready`, `capturing`, `error`
+  - StatusBar shows capture + camera status separately
+  - ProviderStatus shows `solicitando câmera…` during request phase
+  - ProviderStatus active pill reflects the resolved backend during `capturing`
+- implement basic CPU fallback behavior:
+  - document that work and inference may run outside the main thread
+  - keep UI responsive during camera and potential inference work
 - wire provider selection into the worker pipeline:
-  - when user picks MediaPipe, use MediaPipe backend
-  - when user picks Auto, choose best browser-compatible backend
-  - when user picks RTMPose or Custom, prepare path for later backends
-  - show current provider in the capture UI
-- report provider unavailability clearly in the UI
+  - keep the selected provider id available to the worker pipeline
+  - Auto selection is resolved by the registry before capture starts
+  - RTMPose and Custom are prepared as unavailable paths in MVP web
+- report provider unavailability clearly in the UI:
+  - disabled selector options with `não disponível`
+  - `Backend ativo` reflects the resolved provider, not only the raw selection
+- connect camera readiness to app state:
+  - `CameraSelector` reports `cameraReady` up to the App
+  - StatusBar `Camera:` pill reflects `cameraReady`
+  - ProviderStatus message reflects camera ready vs pending
+
+Current web implementation:
+- `CameraSelector` is device-only: it enumerates cameras, keeps the selected device, and mirrors the capture state coming from App
+- `App.tsx` owns the real capture stream lifecycle through `openCamera(selectedDeviceId)` and `closeCamera(stream)`
+- `Viewport` renders the live camera as a muted overlay while the stream is active
+- `ProviderStatus` shows backend pill + message pill with request/capturing/camera-ready styling
+- `StatusBar` shows provider pill, capture state, camera state, character state
+- `store.ts` `CaptureState` is `"idle" | "requesting-camera" | "camera-ready" | "capturing" | "error"`
+- capture button path: `idle` → `requesting-camera` → `capturing` + live preview → `idle` on stop
+- provider wiring is ready for the real MediaPipe worker in Sprint 5
+- app does not assume a single provider or a single camera
+- web app typechecks cleanly with `tsc --noEmit`
+- dev server runs on port 5173 via `pnpm --silent build:web` / Vite dev mode
+
+Capture state machine:
+- `idle` — no stream, camera button enables device selection
+- `requesting-camera` — permission request in progress, selector disabled
+- `capturing` — stream active, live preview visible, stop button shown
+- `camera-ready` — stream active and ready to feed the inference path
+- `error` — camera request failed
 
 Definition of done:
-- webcam works
-- pose worker runs
-- app is not blocked by inference on the main UI thread
-- selected pose engine is actually used by the capture pipeline
+- webcam permission flow works on a compatible browser
+- camera selector lists devices and opens a stream
+- camera stream can be stopped and cleaned up
+- capture state updates StatusBar and ProviderStatus
+- live camera preview is visible in the viewport while capturing
+- provider wiring is ready for the real MediaPipe worker in Sprint 5
+- app does not assume a single provider or a single camera
 
 ## Sprint 5 — MediaPipe integration
 

@@ -5,14 +5,16 @@ import { StatusBar } from "./components/StatusBar.tsx";
 import { ProviderSelector } from "./components/ProviderSelector.tsx";
 import { ProviderStatus } from "./components/ProviderStatus.tsx";
 import { Panel } from "./components/Panel.tsx";
+import type { CaptureState, ProviderId } from "./store.ts";
 import {
   createPoseProviderRegistry,
   startCapture,
   stopCapture,
   resolveActiveProvider,
 } from "./pose/provider-wiring.ts";
-import { useMemo } from "react";
-import type { ProviderId } from "./store.ts";
+import { CameraSelector } from "./components/CameraSelector.tsx";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { openCamera, closeCamera } from "./pose/provider-wiring.ts";
 
 export default function App() {
   const {
@@ -21,9 +23,12 @@ export default function App() {
     captureState,
     cameraReady,
     characterLoaded,
+    selectedDeviceId,
     setProviderId,
     setActiveProviderId,
     setCaptureState,
+    setCameraReady,
+    setSelectedDeviceId,
   } = useAppStore();
 
   const layout: React.CSSProperties = {
@@ -49,30 +54,53 @@ export default function App() {
     setActiveProviderId(resolved);
   };
 
-  const handleStartCapture = async () => {
-    setCaptureState("requesting-camera");
-    const session = {
-      providerId: activeProvider,
-      source: null,
-      running: false,
-    };
-    const result = await startCapture(session, registry, {
-      type: "webcam",
-      deviceId: undefined,
-    });
-    setActiveProviderId(result.session.providerId);
-    setCaptureState(result.session.running ? "capturing" : "idle");
-  };
+  const [viewportStream, setViewportStream] = useState<MediaStream | null>(null);
 
-  const handleStopCapture = async () => {
-    const session = {
-      providerId: activeProviderId,
-      source: null,
-      running: true,
-    };
-    await stopCapture(session);
+  const openCaptureStream = useCallback(async () => {
+    if (!selectedDeviceId) {
+      return;
+    }
+
+    setCaptureState("requesting-camera");
+    setCameraReady(false);
+
+    const stream = await openCamera(selectedDeviceId);
+
+    if (!stream) {
+      setCaptureState("error");
+      return;
+    }
+
+    setViewportStream(stream);
+    setCaptureState("capturing");
+    setCameraReady(true);
+  }, [selectedDeviceId]);
+
+  const closeCaptureStream = useCallback(async () => {
+    if (viewportStream) {
+      closeCamera(viewportStream);
+    }
+
+    setViewportStream(null);
     setCaptureState("idle");
-  };
+    setCameraReady(false);
+  }, [viewportStream]);
+
+  const handleStartCapture = useCallback(async () => {
+    await openCaptureStream();
+  }, [openCaptureStream]);
+
+  const handleStopCapture = useCallback(async () => {
+    await closeCaptureStream();
+  }, [closeCaptureStream]);
+
+  useEffect(() => {
+    return () => {
+      if (viewportStream) {
+        closeCamera(viewportStream);
+      }
+    };
+  }, []);
 
   const isCaptureRunning =
     captureState === "capturing";
@@ -87,29 +115,39 @@ export default function App() {
           isCaptureRunning={isCaptureRunning}
           cameraReady={cameraReady}
           characterLoaded={characterLoaded}
+          captureState={captureState}
         />
       </header>
       <main style={MAIN}>
         <div style={WORKSPACE}>
-          <Viewport />
+          <Viewport stream={isCaptureRunning ? viewportStream : null} />
           <aside style={PANEL_COL}>
             <Panel
               title="Captura"
               actions={
-                <ProviderSelector
-                  value={providerId}
-                  onSelect={handleProviderChange}
-                  providers={registry.getAvailable()}
-                  activeProvider={effectiveActiveProviderId}
-                />
+                <>
+                  <ProviderSelector
+                    value={providerId}
+                    onSelect={handleProviderChange}
+                    providers={registry.getAvailable()}
+                    activeProvider={effectiveActiveProviderId}
+                  />
+                </>
               }
             >
               <ProviderStatus
                 providerId={effectiveActiveProviderId}
                 registry={registry}
                 active={isCaptureRunning && cameraReady}
-                message={cameraReady ? "câmera pronta" : "pendente"}
+                message={captureState === "camera-ready" ? "câmera pronta" : captureState === "requesting-camera" ? "solicitando câmera…" : "pendente"}
                 requestedProviderId={providerId}
+                captureState={captureState}
+              />
+              <CameraSelector
+                captureState={captureState}
+                onStartCapture={handleStartCapture}
+                onStopCapture={handleStopCapture}
+                onDeviceChange={(deviceId) => useAppStore.setState({ selectedDeviceId: deviceId })}
               />
             </Panel>
             <Panel

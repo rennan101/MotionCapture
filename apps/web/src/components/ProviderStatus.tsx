@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import type { ProviderId } from "../store.ts";
-import type { ProviderMetadata, PoseProviderRegistry } from "@motion-forge/pose";
+import type { PoseProviderRegistry } from "@motion-forge/pose";
+import type { ProviderMetadata } from "@motion-forge/pose";
 
 const ROW: React.CSSProperties = {
   display: "flex",
@@ -30,12 +31,39 @@ const REASON: React.CSSProperties = {
   marginLeft: "auto",
 };
 
+type CaptureStateId =
+  | "idle"
+  | "requesting-camera"
+  | "camera-ready"
+  | "capturing"
+  | "error";
+
 interface ProviderStatusProps {
   providerId: ProviderId;
   active: boolean;
   message?: string;
   registry?: PoseProviderRegistry;
   requestedProviderId?: ProviderId;
+  captureState?: string;
+}
+
+function asCaptureStateId(value: string | undefined): CaptureStateId {
+  if (value === "requesting-camera") {
+    return "requesting-camera";
+  }
+  if (value === "idle") {
+    return "idle";
+  }
+  if (value === "camera-ready") {
+    return "camera-ready";
+  }
+  if (value === "capturing") {
+    return "capturing";
+  }
+  if (value === "error") {
+    return "error";
+  }
+  return "idle";
 }
 
 export function ProviderStatus({
@@ -44,6 +72,7 @@ export function ProviderStatus({
   message = "pronto",
   registry,
   requestedProviderId,
+  captureState,
 }: ProviderStatusProps) {
   const resolvedId = useMemo<ProviderId>(() => {
     if (registry) {
@@ -91,19 +120,42 @@ export function ProviderStatus({
     return metadata?.reasonUnavailable;
   }, [registry, providerId, resolvedId, requestedProviderId]);
 
+  const requestingCamera = asCaptureStateId(captureState) === "requesting-camera";
+  const isCapturing = asCaptureStateId(captureState) === "capturing";
+  const isCameraReady = asCaptureStateId(captureState) === "camera-ready";
+
+  const backendPillColor: React.CSSProperties =
+    requestingCamera
+      ? { background: "#2a3a2e", color: "#cfe9d4" }
+      : isCapturing && active
+        ? { background: "#1c3a2e", color: "#7fe3b4" }
+        : { background: "#2a2a33", color: "#b9b9c4" };
+
+  const messagePillColor: React.CSSProperties =
+    requestingCamera || isCapturing
+      ? { background: "#2a3a2e", color: "#cfe9d4" }
+      : { background: "#2a2a33", color: "#b9b9c4" };
+
+  const messageToRender: string =
+    requestingCamera
+      ? "solicitando câmera…"
+      : isCapturing && active
+        ? message || "capturando…"
+        : isCameraReady && active
+          ? message || "câmera pronta"
+          : active
+            ? message
+            : "pendente";
+
   return (
     <div style={ROW}>
       <span style={LABEL}>Backend ativo</span>
-      <span
-        style={{
-          ...VALUE,
-          background: active ? "#1c3a2e" : "#2a2a33",
-          color: active ? "#7fe3b4" : "#b9b9c4",
-        }}
-      >
+      <span style={{ ...VALUE, ...backendPillColor }}>
         {resolvedLabel}
       </span>
-      <span style={VALUE}>{message}</span>
+      <span style={{ ...VALUE, ...messagePillColor }}>
+        {messageToRender}
+      </span>
       {reason && <span style={REASON}>{reason}</span>}
     </div>
   );

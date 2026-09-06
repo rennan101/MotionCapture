@@ -15,6 +15,16 @@ export type CaptureState =
   | "capturing"
   | "error";
 
+export function isCaptureState(value: string): value is CaptureState {
+  return (
+    value === "idle" ||
+    value === "requesting-camera" ||
+    value === "camera-ready" ||
+    value === "capturing" ||
+    value === "error"
+  );
+}
+
 export interface AppState {
   providerId: ProviderId;
   activeProviderId: ProviderId;
@@ -22,12 +32,14 @@ export interface AppState {
   cameraReady: boolean;
   characterLoaded: boolean;
   poseError: string | null;
+  selectedDeviceId: string | null;
   setProviderId: (id: ProviderId) => void;
   setActiveProviderId: (id: ProviderId) => void;
   setCaptureState: (state: CaptureState) => void;
   setCameraReady: (ready: boolean) => void;
   setCharacterLoaded: (loaded: boolean) => void;
   setPoseError: (error: string | null) => void;
+  setSelectedDeviceId: (deviceId: string | null) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -37,10 +49,12 @@ export const useAppStore = create<AppState>((set) => ({
   cameraReady: false,
   characterLoaded: false,
   poseError: null,
+  selectedDeviceId: null,
   setProviderId: (id) => set({ providerId: id }),
   setActiveProviderId: (id) => set({ activeProviderId: id }),
-  setCaptureState: (state) => set({ captureState: state }),
-  setCameraReady: (ready) => set({ cameraReady: ready }),
-  setCharacterLoaded: (loaded) => set({ characterLoaded: loaded }),
-  setPoseError: (error) => set({ poseError: error }),
+  setCameraReady: (ready: boolean) => set({ cameraReady: ready }),
+  setCharacterLoaded: (loaded: boolean) => set({ characterLoaded: loaded }),
+  setPoseError: (error: string | null) => set({ poseError: error }),
+  setSelectedDeviceId: (deviceId: string | null) => set({ selectedDeviceId: deviceId }),
+  setCaptureState: (state: CaptureState) => set({ captureState: state }),
 }));

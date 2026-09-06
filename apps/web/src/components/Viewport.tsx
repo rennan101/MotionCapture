@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 declare global {
   interface Window {
@@ -6,11 +6,29 @@ declare global {
   }
 }
 
-export function Viewport() {
+export function Viewport({
+  stream,
+}: {
+  stream?: MediaStream | null;
+} = {}) {
   const mountRef = useRef<HTMLDivElement>(null);
-  const sceneRef = useRef<Window["THREE"] extends { Scene: new () => infer S } ? S : unknown>(null);
-  const cameraRef = useRef<Window["THREE"] extends { PerspectiveCamera: new () => infer C } ? C : unknown>(null);
-  const rendererRef = useRef<Window["THREE"] extends { WebGLRenderer: new () => infer R } ? R : unknown>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [ready, setReady] = useState(false);
+  const sceneRef = useRef<Window["THREE"] extends {
+    Scene: new () => infer S;
+  }
+    ? S
+    : unknown>(null);
+  const cameraRef = useRef<Window["THREE"] extends {
+    PerspectiveCamera: new () => infer C;
+  }
+    ? C
+    : unknown>(null);
+  const rendererRef = useRef<Window["THREE"] extends {
+    WebGLRenderer: new () => infer R;
+  }
+    ? R
+    : unknown>(null);
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -107,7 +125,21 @@ export function Viewport() {
       placeholderRightLeg.position.set(0.16, 0.32, 0);
       protoGroup.add(placeholderRightLeg);
 
-      const protoGroupCleanup = protoGroup;
+      if (stream) {
+        const video = document.createElement("video");
+        video.autoplay = true;
+        video.playsInline = true;
+        video.muted = true;
+        video.srcObject = stream;
+        videoRef.current = video;
+
+        video.addEventListener("loadeddata", () => {
+          video.play().catch(() => {
+            /* best-effort only */
+          });
+          setReady(true);
+        });
+      }
 
       let rafId = 0;
 
@@ -133,10 +165,12 @@ export function Viewport() {
         window.removeEventListener("resize", onResize);
         cancelAnimationFrame(rafId);
         renderer.dispose();
-        if (mountRef.current && renderer.domElement.parentNode === mountRef.current) {
+        if (
+          mountRef.current &&
+          renderer.domElement.parentNode === mountRef.current
+        ) {
           mountRef.current.removeChild(renderer.domElement);
         }
-  
       };
     }).catch((err) => {
       console.error("Viewport: failed to load three", err);
@@ -144,8 +178,12 @@ export function Viewport() {
 
     return () => {
       cancelled = true;
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+        videoRef.current = null;
+      }
     };
-  }, []);
+  }, [stream]);
 
   return (
     <div
@@ -158,7 +196,26 @@ export function Viewport() {
         overflow: "hidden",
         background: "#111",
         boxShadow: "0 8px 30px rgba(0,0,0,0.4)",
+        position: "relative",
       }}
-    />
+    >
+      {ready && videoRef.current && (
+        <video
+          ref={videoRef}
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            opacity: 0.6,
+            pointerEvents: "none",
+          }}
+          muted
+          playsInline
+          autoPlay
+        />
+      )}
+    </div>
   );
 }

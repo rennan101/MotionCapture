@@ -227,3 +227,50 @@ export function isActiveProviderAvailable(
   const metadata = registry.getMetadata(providerId);
   return Boolean(metadata?.available);
 }
+
+export async function listVideoInputDevices():
+  Promise<Array<{ label: string; deviceId: string }>> {
+  if (!navigator.mediaDevices?.enumerateDevices) {
+    return [];
+  }
+
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  return devices
+    .filter(
+      (device): device is MediaDeviceInfo & { kind: "videoinput" } =>
+        device.kind === "videoinput",
+    )
+    .map((device) => ({
+      label:
+        device.label ||
+        `Câmera ${device.deviceId.slice(0, 8)}${device.deviceId.slice(8) ? "…" : ""}`,
+      deviceId: device.deviceId,
+    }));
+}
+
+export async function openCamera(
+  deviceId?: string,
+): Promise<MediaStream | null> {
+  if (!navigator.mediaDevices?.getUserMedia) {
+    return null;
+  }
+
+  try {
+    const constraints: MediaStreamConstraints = {
+      video:
+        deviceId
+          ? { deviceId: { exact: deviceId } }
+          : { width: { ideal: 640 }, height: { ideal: 480 } },
+      audio: false,
+    };
+
+    return await navigator.mediaDevices.getUserMedia(constraints);
+  } catch (error) {
+    console.warn("MotionForge: camera request failed", error);
+    return null;
+  }
+}
+
+export function closeCamera(stream: MediaStream): void {
+  stream.getTracks().forEach((track) => track.stop());
+}
