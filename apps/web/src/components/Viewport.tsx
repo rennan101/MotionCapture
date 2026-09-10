@@ -1,13 +1,25 @@
 import { useEffect, useRef, useState } from "react";
+import * as THREE from "three";
 import type { PoseResult } from "@motion-forge/pose";
+import {
+  DEFAULT_AXIS_MAPPING,
+  RetargetSolver,
+  UE5_CANONICAL_ANCHOR_BONES,
+  UE5_RIG_BINDINGS,
+  captureRestPose,
+  type RestPoseData,
+} from "@motion-forge/retarget";
 import { useAppStore } from "../store";
 
 export function Viewport({
   stream,
   onVideoReady,
+  onRetargetReady,
 }: {
   stream?: MediaStream | null;
   onVideoReady?: (video: HTMLVideoElement) => void;
+  /** Emitted when the FBX's rest pose has been captured (Sprint 9 export). */
+  onRetargetReady?: (rest: RestPoseData) => void;
 } = {}) {
   const mountRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -20,6 +32,8 @@ export function Viewport({
   const customCharacterUrl = useAppStore((s) => s.customCharacterUrl);
   const inferenceFps = useAppStore((s) => s.inferenceFps);
   const inferenceLatencyMs = useAppStore((s) => s.inferenceLatencyMs);
+  const onRetargetReadyRef = useRef(onRetargetReady);
+  onRetargetReadyRef.current = onRetargetReady;
 
   const sceneRef = useRef<any>(null);
   const cameraRef = useRef<any>(null);
@@ -29,6 +43,11 @@ export function Viewport({
   const protoGroupRef = useRef<any>(null);
   const jointsRef = useRef<{ [key: string]: any }>({});
   const bonesLinesRef = useRef<any[]>([]);
+  const retargetRef = useRef<{
+    solver: InstanceType<typeof RetargetSolver>;
+    rest: RestPoseData;
+    bonesByName: Map<string, any>;
+  } | null>(null);
 
   // Carrega e renderiza o Three.js
   useEffect(() => {
@@ -36,7 +55,7 @@ export function Viewport({
 
     let cancelled = false;
 
-    Promise.all([import("three"), import("three-stdlib")]).then(([THREE, stdlib]) => {
+    import("three-stdlib").then((stdlib) => {
       if (cancelled || !mountRef.current) return;
 
       const scene = new THREE.Scene();
@@ -156,6 +175,67 @@ export function Viewport({
         return { line, a, b, geom };
       });
 
+      // Captura a pose de repouso (T-pose) e prepara o solver de retarget
+      const setupRetargeting = (fbx: any) => {
+        const bonesByName = new Map<string, any>();
+        fbx.traverse((child: any) => {
+          if (child.isBone || child.type === "Bone") {
+            bonesByName.set(child.name, child);
+          }
+        });
+
+        const snapshots = UE5_RIG_BINDINGS.flatMap((b) => {
+          const results: {
+            name: string;
+            worldPos: [number, number, number];
+            worldRot: [number, number, number, number];
+            localRot: [number, number, number, number];
+          }[] = [];
+          for (const boneName of [b.boneName, UE5_CANONICAL_ANCHOR_BONES[b.canonical] ?? b.boneName]) {
+            const bone = bonesByName.get(boneName);
+            if (!bone) continue;
+            const wp = new THREE.Vector3();
+            const wq = new THREE.Quaternion();
+            bone.getWorldPosition(wp);
+            bone.getWorldQuaternion(wq);
+            results.push({
+              name: boneName,
+              worldPos: [wp.x, wp.y, wp.z],
+              worldRot: [wq.x, wq.y, wq.z, wq.w],
+              localRot: [bone.quaternion.x, bone.quaternion.y, bone.quaternion.z, bone.quaternion.w],
+            });
+          }
+          return results;
+        });
+        // Dedupe by name (binding + anchor often coincide)
+        const seen = new Set<string>();
+        const unique = snapshots.filter((s) => {
+          if (seen.has(s.name)) return false;
+          seen.add(s.name);
+          return true;
+        });
+
+        const rest = captureRestPose(unique, UE5_RIG_BINDINGS, UE5_CANONICAL_ANCHOR_BONES, "hip");
+        onRetargetReadyRef.current?.(rest);
+        retargetRef.current = {
+          // Sprint 7 adaptive profile: velocity-adaptive smoothing, outlier
+          // rejection, confidence hysteresis, knee/elbow joint limits and
+          // foot ground lock — no fixed smoothing (the stabilizer owns it).
+          solver: new RetargetSolver(UE5_RIG_BINDINGS, rest, {
+            minConfidence: 0.25,
+            stabilizer: {
+              baseSmoothing: 0.55,
+              velocitySaturationDeg: 20,
+            },
+          }),
+          rest,
+          bonesByName,
+        };
+        if (rest.missing.length > 0) {
+          console.warn("Retarget: ossos ausentes no rig:", rest.missing);
+        }
+      };
+
       // Função de carregamento do FBX padrão ou custom
       const loadCharacterModel = () => {
         while (charGroup.children.length > 0) {
@@ -184,6 +264,7 @@ export function Viewport({
                 child.receiveShadow = true;
               }
             });
+            setupRetargeting(fbx);
             charGroup.add(fbx);
           },
           undefined,
@@ -318,7 +399,65 @@ export function Viewport({
         line.visible = false;
       }
     });
+
+    applyRetarget(currentPose);
   }, [currentPose]);
+
+  // Restaura a pose de repouso quando a captura para (pose some)
+  useEffect(() => {
+    if (currentPose) return;
+    const rt = retargetRef.current;
+    if (!rt) return;
+    rt.solver.reset();
+    for (const [boneName, bone] of rt.bonesByName) {
+      const restBone = rt.rest.bones[boneName];
+      if (restBone) {
+        bone.quaternion.set(restBone.localRot[0], restBone.localRot[1], restBone.localRot[2], restBone.localRot[3]);
+      }
+      if (boneName === "hip" && bone.userData.restPosition) {
+        const [x, y, z] = bone.userData.restPosition;
+        bone.position.set(x, y, z);
+      }
+      bone.updateMatrixWorld(true);
+    }
+  }, [currentPose]);
+
+  // Aplica a pose canônica resolvida ao rig do personagem
+  const applyRetarget = (poseResult: PoseResult) => {
+    const rt = retargetRef.current;
+    if (!rt) return;
+    const result = rt.solver.solve(poseResult.canonical, DEFAULT_AXIS_MAPPING, 1);
+    void result.skipped;
+    for (const [boneName, localQuat] of Object.entries(result.localRotations)) {
+      const bone = rt.bonesByName.get(boneName);
+      if (!bone) continue;
+      bone.quaternion.set(localQuat[0], localQuat[1], localQuat[2], localQuat[3]);
+    }
+    // Posição do quadril: converte o alvo em espaço-mundo para o espaço
+    // local do pai do osso. O pai (raiz do FBX) carrega escala 0.01, então
+    // a conversão usa a matriz afim completa — inverso de rotação E escala
+    // (aplicar apenas Rᵀ multiplicava o alvo por ~100). Mesma matemática do
+    // baker de exportação para que o clipe exportado bata com o viewport.
+    const hip = rt.bonesByName.get("hip");
+    if (hip && hip.parent) {
+      const parent = hip.parent;
+      if (!hip.userData.restPosition) {
+        hip.userData.restPosition = [hip.position.x, hip.position.y, hip.position.z];
+      }
+      parent.updateWorldMatrix(true, false);
+      const inv = parent.matrixWorld.clone().invert();
+      const target = inv.multiplyVector(
+        new THREE.Vector3(
+          result.hipsWorldPosition[0],
+          result.hipsWorldPosition[1],
+          result.hipsWorldPosition[2],
+        ),
+      );
+      hip.position.set(target.x, target.y, target.z);
+    }
+    const rootBone = rt.bonesByName.get("root");
+    if (rootBone) rootBone.updateMatrixWorld(true);
+  };
 
   // Vídeo da câmera
   useEffect(() => {

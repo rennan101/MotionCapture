@@ -12,6 +12,7 @@
     "@mediapipe/tasks-vision": "^1.0.1",
     "@motion-forge/core": "workspace:*",
     "@motion-forge/pose": "workspace:*",
+    "@motion-forge/retarget": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "three": "^0.170.0",
@@ -21,6 +22,7 @@
   "devDependencies": {
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@types/three": "^0.170.0",
     "@vitejs/plugin-react": "^4.0.0",
     "typescript": "^5.7.0",
     "vite": "^6.0.0"

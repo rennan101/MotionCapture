@@ -54,4 +54,5 @@ export class PoseProviderRegistry {
     }
 }
 export * from "./mediapipe-mapper.js";
+export * from "./motion-clip.js";
 //# sourceMappingURL=pose-provider.js.map

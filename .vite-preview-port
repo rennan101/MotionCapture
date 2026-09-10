@@ -1,6 +1,6 @@
 5173
 
-Last validated after Sprint 3 wiring.
+Last validated after Sprint 4 close-out (provider-gated pipeline + low-confidence handling + error banner).
 
 Force flag added to the web dev script to reduce stale module graph issues during iterative preview work.
 
@@ -19,8 +19,11 @@ Current docs aligned to code:
 - docs/SPRINTS_DESKTOP_MACOS.md Sprint 3 and 4 aligned to the shared pose package
 - docs/TASK_AUTOMODE_VALIDATION.md updated with current web matrix and web diagnostics
 
-Active dev server process is started with:
+Active dev server process is started under launchd as `motion-forge-preview`:
 
-  nohup pnpm --silent dev:web -- --port 5173 > "$HOME/.freebuff/preview-f1957dea-276c-4a43-b29a-4b2bf8c97765.log" 2>&1 &
+```sh
+launchctl submit -l motion-forge-preview -- /bin/sh -c "export PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin; cd /Users/rennan/Documents/Websites_Work/MotionCapture && exec pnpm --silent dev:web -- --port 5173 > /Users/rennan/Documents/Websites_Work/MotionCapture/.freebuff/preview-f1957dea-276c-4a43-b29a-4b2bf8c97765.log 2>&1"
+```
 
-and registered under launchd as `motion-forge-preview`.
+Note: PATH must be exported inside the launchd job — bare `/bin/sh` under launchd does not
+see Homebrew's pnpm/node. Stop it with `launchctl remove motion-forge-preview`.

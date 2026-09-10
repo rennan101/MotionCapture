@@ -49,9 +49,11 @@ export interface CanonicalPose {
     leftUpperLeg: BoneCapturePoint;
     leftLowerLeg: BoneCapturePoint;
     leftFoot: BoneCapturePoint;
+    leftAnkle: BoneCapturePoint;
     rightUpperLeg: BoneCapturePoint;
     rightLowerLeg: BoneCapturePoint;
     rightFoot: BoneCapturePoint;
+    rightAnkle: BoneCapturePoint;
 }
 export interface PoseResult {
     canonical: CanonicalPose;
@@ -93,4 +95,5 @@ export declare class PoseProviderRegistry {
     getMetadata(id: ProviderId): ProviderMetadata | undefined;
 }
 export * from "./mediapipe-mapper.js";
+export * from "./motion-clip.js";
 //# sourceMappingURL=pose-provider.d.ts.map

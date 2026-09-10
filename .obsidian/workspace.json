@@ -21,7 +21,8 @@
               "title": "SPRINTS_WEB"
             }
           }
-        ]
+        ],
+        "stacked": true
       }
     ],
     "direction": "vertical"
@@ -79,7 +80,8 @@
               "title": "Marcadores"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "horizontal",
@@ -174,8 +176,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -190,19 +191,20 @@
   },
   "active": "7afe80e56ee4f190",
   "lastOpenFiles": [
-    "docs/TASK_AUTOMODE_VALIDATION.md",
+    "apps/web/dist/assets/index-DNMGZ02Y.js",
+    "apps/web/dist/assets/index-DXRmwSvl.js",
     "docs/SPRINTS_WEB.md",
+    "apps/web/dist/index.html",
+    "apps/web/dist/assets/pose.worker-K17FZh9Q.js",
+    "apps/web/dist/assets/index-RoVNo7p1.js",
+    "apps/web/dist/assets/index-DDXw7crP.js",
+    "apps/web/dist/assets/index-CmBjKKf8.css",
+    "apps/web/dist/assets",
+    "apps/web/dist/assets/index-DFEIOzJg.js",
+    "apps/web/dist/assets/index-CaeabDiA.js",
+    "docs/TASK_AUTOMODE_VALIDATION.md",
     "docs/SPRINTS_DESKTOP_MACOS.md",
     "apps/web/dist/assets/index-DztLBjDw.js",
-    "apps/web/dist/assets/index-B3UlowZv.js",
-    "apps/web/dist/assets/index-CmBjKKf8.css",
-    "apps/web/dist/assets/three.module-BtCAaDxU.js",
-    "apps/web/dist/index.html",
-    "apps/web/dist/assets",
-    "apps/web/dist",
-    "packages/core/dist/tsconfig.tsbuildinfo",
-    "packages/core/dist/motion-forge-core.d.ts",
-    "packages/core/dist/motion-forge-core.d.ts.map",
     "docs/MOTION_FORGE_PLAN.md",
     "docs/POSE_PROVIDER_CONTRACT.md"
   ]

@@ -1,6 +1,10 @@
 import { FilesetResolver, PoseLandmarker } from "@mediapipe/tasks-vision";
 import { mapMediaPipeToCanonical } from "@motion-forge/pose";
 
+// Mirrors LOW_CONFIDENCE_FLOOR in pose-pipeline.ts: frames below this overall
+// confidence are marked so the main thread can hold the last good pose.
+const LOW_CONFIDENCE_FLOOR = 0.25;
+
 let landmarker: PoseLandmarker | null = null;
 let isInitializing = false;
 
@@ -58,6 +62,15 @@ self.onmessage = async (e: MessageEvent) => {
   const { type, payload } = e.data;
 
   if (type === "INIT") {
+    const requestedProvider: string = payload?.providerId ?? "mediapipe";
+    if (requestedProvider !== "mediapipe") {
+      // RTMPose / NVIDIA / custom are prepared-but-unavailable paths on web MVP.
+      self.postMessage({
+        type: "PROVIDER_UNAVAILABLE",
+        payload: { providerId: requestedProvider },
+      });
+      return;
+    }
     await initLandmarker();
     return;
   }
@@ -93,6 +106,10 @@ self.onmessage = async (e: MessageEvent) => {
           latencyMs,
           "mediapipe"
         );
+
+        if (poseResult.canonical.overallConfidence < LOW_CONFIDENCE_FLOOR) {
+          poseResult.warnings.push("low-confidence-frame");
+        }
 
         self.postMessage({
           type: "POSE_RESULT",

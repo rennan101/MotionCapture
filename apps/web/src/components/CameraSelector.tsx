@@ -3,6 +3,8 @@ import {
   listVideoInputDevices,
   openCamera,
   closeCamera,
+  type CameraDeviceItem,
+  type CameraOpenResult,
 } from "../pose/provider-wiring.ts";
 import type { CaptureState } from "../store.ts";
 
@@ -10,6 +12,22 @@ export type CameraSession = {
   stream: MediaStream | null;
   deviceId: string | null;
 };
+
+export type CameraOpenOutcome =
+  | "opened"
+  | "denied"
+  | "not-allowed"
+  | "overconstrained"
+  | "unsupported"
+  | "fallback-opened"
+  | "fallback-denied"
+  | "fallback-unavailable"
+  | "error";
+
+export interface CameraSelectorOutcome {
+  outcome: CameraOpenOutcome;
+  detail: string;
+}
 
 export function CameraSelector({
   captureState = "idle",
@@ -20,13 +38,17 @@ export function CameraSelector({
     /* noop */
   },
   onDeviceChange,
+  onOutcome,
 }: {
   captureState?: CaptureState;
   onStartCapture?: () => void;
   onStopCapture?: () => void;
   onDeviceChange?: (deviceId: string | null) => void;
+  /** Fires when a device is chosen or when a camera request resolves so the
+      parent can update diagnostics/server state explicitly. */
+  onOutcome?: (outcome: CameraSelectorOutcome) => void;
 } = {}) {
-  const [devices, setDevices] = useState<Array<{ label: string; deviceId: string }>>([]);
+  const [devices, setDevices] = useState<CameraDeviceItem[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -36,9 +58,15 @@ export function CameraSelector({
         if (!cancelled) {
           setDevices(list);
           if (list.length > 0 && !selectedDeviceId) {
-            const first = list[0].deviceId;
-            setSelectedDeviceId(first);
-            onDeviceChange?.(first);
+            const first = list[0];
+            setSelectedDeviceId(first.deviceId);
+            onDeviceChange?.(first.deviceId);
+            onOutcome?.({
+              outcome: "opened",
+              detail: first.labelUnknown
+                ? `Câmera ${first.deviceId.slice(0, 8)}${first.deviceId.slice(8) ? "…" : ""} (sem nome)"
+                : first.label,
+            });
           }
         }
       })
@@ -76,6 +104,12 @@ export function CameraSelector({
               const next = candidate.deviceId;
               setSelectedDeviceId(next);
               onDeviceChange?.(next);
+              onOutcome?.({
+                outcome: "opened",
+                detail: candidate.labelUnknown
+                  ? `Câmera ${candidate.deviceId.slice(0, 8)}${candidate.deviceId.slice(8) ? "…" : ""} (sem nome)`
+                  : candidate.label,
+              });
             }
           }}
           disabled={isRequesting || isCapturing}
@@ -83,7 +117,9 @@ export function CameraSelector({
           <option value="">Selecionar câmera…</option>
           {devices.map((device) => (
             <option key={device.deviceId} value={device.deviceId}>
-              {device.label}
+              {device.labelUnknown
+                ? `Câmera ${device.deviceId.slice(0, 8)}${device.deviceId.slice(8) ? "…" : ""} (sem nome)`
+                : device.label}
             </option>
           ))}
         </select>

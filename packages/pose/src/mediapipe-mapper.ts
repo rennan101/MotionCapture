@@ -65,7 +65,11 @@ export function mapMediaPipeToCanonical(
   const rightKnee = makePoint(source[26]);
   const leftAnkle = makePoint(source[27]);
   const rightAnkle = makePoint(source[28]);
+  const leftUpperLeg: BoneCapturePoint = leftHip;
+  const leftLowerLeg: BoneCapturePoint = leftKnee;
   const leftFoot = makePoint(source[31] || source[27]);
+  const rightUpperLeg: BoneCapturePoint = rightHip;
+  const rightLowerLeg: BoneCapturePoint = rightKnee;
   const rightFoot = makePoint(source[32] || source[28]);
   const nose = makePoint(source[0]);
 
@@ -98,12 +102,14 @@ export function mapMediaPipeToCanonical(
     rightUpperArm: rightShoulder,
     rightLowerArm: rightElbow,
     rightHand: rightWrist,
-    leftUpperLeg: leftHip,
-    leftLowerLeg: leftKnee,
+    leftUpperLeg,
+    leftLowerLeg,
     leftFoot,
-    rightUpperLeg: rightHip,
-    rightLowerLeg: rightKnee,
+    leftAnkle,
+    rightUpperLeg,
+    rightLowerLeg,
     rightFoot,
+    rightAnkle,
   };
 
   return {
