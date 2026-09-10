@@ -191,6 +191,8 @@
   },
   "active": "7afe80e56ee4f190",
   "lastOpenFiles": [
+    "README_DEPLOY_WEB.md",
+    "vercel.json",
     "apps/web/dist/assets/index-DNMGZ02Y.js",
     "apps/web/dist/assets/index-DXRmwSvl.js",
     "docs/SPRINTS_WEB.md",
@@ -201,10 +203,8 @@
     "apps/web/dist/assets/index-CmBjKKf8.css",
     "apps/web/dist/assets",
     "apps/web/dist/assets/index-DFEIOzJg.js",
-    "apps/web/dist/assets/index-CaeabDiA.js",
     "docs/TASK_AUTOMODE_VALIDATION.md",
     "docs/SPRINTS_DESKTOP_MACOS.md",
-    "apps/web/dist/assets/index-DztLBjDw.js",
     "docs/MOTION_FORGE_PLAN.md",
     "docs/POSE_PROVIDER_CONTRACT.md"
   ]

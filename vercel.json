@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "buildCommand": "pnpm install && pnpm --silent build:web",
+  "installCommand": "pnpm install",
+  "framework": "custom",
+  "outputDirectory": "apps/web/dist",
+  "cleanUrls": true,
+  "trailingSlash": true
+}
