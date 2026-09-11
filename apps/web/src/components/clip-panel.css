@@ -1,0 +1,104 @@
+.mf-clip-empty {
+  font-size: 12px;
+  color: #71717a;
+  padding: 8px 2px;
+}
+
+.mf-clip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.mf-clip-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #27272a;
+  background: #141519;
+}
+
+.mf-clip-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e4e4e7;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mf-clip-meta {
+  font-size: 11px;
+  color: #71717a;
+  flex-shrink: 0;
+}
+
+.mf-clip-source {
+  font-size: 10px;
+  color: #818cf8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mf-clip-btn {
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid #3f3f46;
+  background: #1c1d24;
+  color: #e4e4e7;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.mf-clip-btn-danger {
+  color: #f0888a;
+  border-color: rgba(240, 136, 138, 0.33);
+}
+
+.mf-clip-hint {
+  font-size: 11px;
+  color: #71717a;
+  padding: 2px 2px 0;
+}
+
+.mf-clip-export-done {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+  padding: 3px 6px;
+  border-radius: 5px;
+  background: #1c241f;
+  border: 1px solid #2f3a2c;
+}
+
+.mf-clip-export-mark {
+  font-size: 11px;
+  color: #a8e6cf;
+}
+
+.mf-clip-export-text {
+  font-size: 11px;
+  color: #cfd8d0;
+  word-break: break-all;
+}
+
+.mf-clip-export-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border-radius: 4px;
+  border: 1px solid #333;
+  background: #1c1d24;
+  color: #71717a;
+  cursor: pointer;
+  font-size: 10px;
+  line-height: 1;
+  margin-left: 4px;
+}

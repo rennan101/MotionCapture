@@ -1,0 +1,76 @@
+.mf-record-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.mf-record-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mf-record-btn {
+  flex: 1;
+  min-width: 90px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid #3f3f46;
+  background: #1c1d24;
+  color: #e4e4e7;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.mf-record-btn-primary {
+  background: #7f1d1d;
+  border-color: #b91c1c;
+}
+
+.mf-record-btn-stop {
+  background: #26262c;
+}
+
+.mf-rec-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #f87171;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(185, 28, 28, 0.53);
+  background: #271417;
+}
+
+.mf-rec-badge-paused {
+  color: #a1a1aa;
+  border-color: rgba(82, 82, 91, 0.53);
+  background: #1c1d24;
+}
+
+.mf-rec-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #ef4444;
+}
+
+.mf-record-pending {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #3f3f46;
+  background: #141519;
+}
+
+.mf-record-pending-title {
+  font-size: 12px;
+  color: #d4d4d8;
+}

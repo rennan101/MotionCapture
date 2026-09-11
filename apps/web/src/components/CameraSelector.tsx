@@ -64,7 +64,7 @@ export function CameraSelector({
             onOutcome?.({
               outcome: "opened",
               detail: first.labelUnknown
-                ? `Câmera ${first.deviceId.slice(0, 8)}${first.deviceId.slice(8) ? "…" : ""} (sem nome)"
+                ? `Câmera ${first.deviceId.slice(0, 8)}${first.deviceId.slice(8) ? '…' : ''} (sem nome)`
                 : first.label,
             });
           }
@@ -107,7 +107,7 @@ export function CameraSelector({
               onOutcome?.({
                 outcome: "opened",
                 detail: candidate.labelUnknown
-                  ? `Câmera ${candidate.deviceId.slice(0, 8)}${candidate.deviceId.slice(8) ? "…" : ""} (sem nome)`
+                  ? `Câmera ${candidate.deviceId.slice(0, 8)}${candidate.deviceId.slice(8) ? '…' : ''} (sem nome)`
                   : candidate.label,
               });
             }
@@ -118,7 +118,7 @@ export function CameraSelector({
           {devices.map((device) => (
             <option key={device.deviceId} value={device.deviceId}>
               {device.labelUnknown
-                ? `Câmera ${device.deviceId.slice(0, 8)}${device.deviceId.slice(8) ? "…" : ""} (sem nome)`
+                ? `Câmera ${device.deviceId.slice(0, 8)}${device.deviceId.slice(8) ? '…' : ''} (sem nome)`
                 : device.label}
             </option>
           ))}

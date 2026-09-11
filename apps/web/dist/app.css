@@ -1,0 +1,135 @@
+/* Motion Forge — global layout (vanilla refactor) */
+
+:root {
+  --bg-base: #09090b;
+  --bg-surface: #12131a;
+  --bg-panel: #1a1a1f;
+  --border: #27272a;
+  --border-panel: #333;
+  --text-primary: #e4e4e7;
+  --text-secondary: #b9b9c4;
+  --text-muted: #71717a;
+  --accent: #6366f1;
+  --accent-soft: rgba(99, 102, 241, 0.2);
+  --green: #7fe3b4;
+  --green-soft: rgba(127, 227, 180, 0.3);
+  --red: #f0888a;
+  --red-soft: rgba(240, 136, 138, 0.3);
+  --amber: #fbbf24;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.mf-app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.mf-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-surface);
+  flex-shrink: 0;
+}
+
+.mf-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.2px;
+}
+
+.mf-status-bar {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.mf-pill {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #222;
+  color: #ddd;
+  white-space: nowrap;
+}
+
+.mf-main {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  min-height: calc(100vh - 56px);
+  background: var(--bg-base);
+}
+
+.mf-error-banner {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  background: #3a2226;
+  border: 1px solid rgba(240, 136, 138, 0.33);
+  color: var(--red);
+  font-size: 13px;
+}
+
+.mf-error-text {
+  flex: 1;
+}
+
+.mf-error-dismiss {
+  background: transparent;
+  border: none;
+  color: var(--red);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.mf-workspace {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 16px;
+  padding: 0 4px;
+  min-height: 0;
+}
+
+.mf-viewport-col {
+  min-width: 0;
+  min-height: 0;
+}
+
+.mf-panel-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 2px;
+}

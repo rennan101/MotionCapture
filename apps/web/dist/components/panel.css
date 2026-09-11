@@ -1,0 +1,34 @@
+.mf-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-panel);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.mf-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-panel);
+}
+
+.mf-panel-title {
+  margin: 0;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+.mf-panel-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.mf-panel-body {
+  padding: 10px 12px;
+}

@@ -1,0 +1,55 @@
+.mf-provider-selector {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mf-provider-legend {
+  padding: 0 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mf-provider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 4px;
+}
+
+.mf-provider-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #26262b;
+  cursor: pointer;
+}
+
+.mf-provider-label input[type="radio"] {
+  width: 14px;
+  height: 14px;
+  accent-color: #7fe3b4;
+  cursor: inherit;
+}
+
+.mf-provider-caption {
+  font-size: 13px;
+  color: #e7e7e7;
+}
+
+.mf-provider-unavailable {
+  margin-left: auto;
+  font-size: 11px;
+  color: #f0888a;
+}
+
+.mf-provider-active-indicator {
+  margin-left: auto;
+  font-size: 10px;
+  color: #7fe3b4;
+  font-weight: 600;
+}

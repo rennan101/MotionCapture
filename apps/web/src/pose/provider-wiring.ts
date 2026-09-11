@@ -292,7 +292,7 @@ export async function openCamera(
   ): Promise<CameraOpenResult> => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      return { stream, outcome: label, detail: "câmera aberta" };
+      return { stream, outcome: label as CameraOpenResult["outcome"], detail: "câmera aberta" };
     } catch (error) {
       if (error instanceof DOMException) {
         if (error.name === "NotAllowedError") {

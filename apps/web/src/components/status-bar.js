@@ -1,0 +1,78 @@
+import { resolveActiveProvider } from "../pose/provider-wiring.js";
+
+function asCaptureStateId(value) {
+  if (value === "requestingcamera") return "requestingcamera";
+  if (value === "idle") return "idle";
+  if (value === "camera-ready") return "camera-ready";
+  if (value === "capturing") return "capturing";
+  if (value === "error") return "error";
+  return "idle";
+}
+
+export function renderHeader({ providerId, isCaptureRunning, cameraReady, characterLoaded, registry, captureState }) {
+  const container = document.createElement("div");
+  container.className = "mf-status-bar";
+
+  const displayProvider = (() => {
+    if (!registry || providerId !== "auto") return providerId;
+    const resolved = registry.resolveSelection(providerId);
+    const metadata = registry.getMetadata(resolved);
+    if (metadata && resolved !== "unknown") {
+      return "auto → " + metadata.label;
+    }
+    if (resolved === "unknown") {
+      return "auto → sem provider";
+    }
+    return "auto → " + resolved;
+  })();
+
+  const resolved = registry ? registry.resolveSelection(providerId) : providerId;
+  const providerPillColor = (() => {
+    if (registry && providerId === "auto") {
+      if (resolved === "unknown") {
+        return { background: "#3a2a2a", color: "#f0888a" };
+      }
+    }
+    return { background: "#222", color: "#ddd" };
+  })();
+
+  const requestingCamera = asCaptureStateId(captureState) === "requestingcamera";
+  const isCameraReady = asCaptureStateId(captureState) === "camera-ready";
+  const captureLabel = requestingCamera
+    ? "requesting"
+    : isCaptureRunning
+      ? "on"
+      : "off";
+  const cameraLabel = requestingCamera
+    ? "requesting"
+    : isCameraReady
+      ? "ready"
+      : cameraReady
+        ? "ready"
+        : "no";
+
+  const providerPill = document.createElement("span");
+  providerPill.className = "mf-pill";
+  providerPill.style.background = providerPillColor.background;
+  providerPill.style.color = providerPillColor.color;
+  providerPill.textContent = "Provider: " + displayProvider;
+
+  const capturePill = document.createElement("span");
+  capturePill.className = "mf-pill";
+  capturePill.textContent = "Capture: " + captureLabel;
+
+  const cameraPill = document.createElement("span");
+  cameraPill.className = "mf-pill";
+  cameraPill.textContent = "Camera: " + cameraLabel;
+
+  const charPill = document.createElement("span");
+  charPill.className = "mf-pill";
+  charPill.textContent = "Character: " + (characterLoaded ? "loaded" : "none");
+
+  container.appendChild(providerPill);
+  container.appendChild(capturePill);
+  container.appendChild(cameraPill);
+  container.appendChild(charPill);
+
+  return container;
+}

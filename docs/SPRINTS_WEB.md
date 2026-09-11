@@ -17,13 +17,21 @@ The web app must not require the user to install extra programs.
 
 ## Stack
 
-- React + TypeScript + Vite
-- Zustand for state
+Current completed stack:
+- plain HTML5 + JavaScript + CSS
 - Three.js for 3D
 - Web Workers for pose and motion work
-- WebGPU when available
 - MediaPipe Pose Landmarker as the first provider
-- ONNX Runtime Web as a compatible abstraction path
+- shared core packages consumed as ES modules: `@motion-forge/core`, `@motion-forge/pose`, `@motion-forge/retarget`
+
+Previous React stack (Sprint 11 replaced it for the user-facing app):
+- React + TypeScript + Vite
+- Zustand for state
+
+The refactor is about the app shell and UI layer, not the underlying capture/retarget/export math, which stays shared through `@motion-forge/*`.
+
+Sprint 11 status: DONE — vanilla web app built by `apps/web/scripts/build.cjs` and served statically from `apps/web/dist/`.
+Next: Sprint 12 — QA, error catalog and correction.
 
 ## Pose providers
 
@@ -498,6 +506,86 @@ Deferred:
 - direct FBX export on web
 - formal cross-device/browser matrix
 - user-facing quality/performance profile selector
+
+## Sprint 11 — Web refactor to vanilla HTML5/JS/CSS
+
+Goal:
+- remove Vite/React/TypeScript from the web app
+- rebuild the same experience as plain HTML5, JavaScript and CSS
+- keep the product behavior the same (webcam → pose → retarget → preview → record → GLB export)
+- keep MediaPipe as the default provider through the same PoseProvider contract
+
+Status: DONE — built and served from `apps/web/dist/`.
+
+How the vanilla app is built and served:
+- entry: `apps/web/index.html` loads `/boot.js` with an import map for Three.js, three-stdlib and MediaPipe
+- build: `cd apps/web && node scripts/build.cjs` bundles the vanilla sources with esbuild into `apps/web/dist/`
+- runtime serve: static file server on port 5173 serving `apps/web/dist/`
+
+What changed during close-out:
+- added `apps/web/tsconfig.esbuild.json` so the build script can process the remaining TS sources
+- wired the `PlaybackState` type through `apps/web/src/store.ts` so the clip panel and app shell bundle cleanly
+- rebuilt `apps/web/dist/` with no esbuild bundle errors for the app shell, components, export, or pose pipeline
+- re-verified the served dist with the project’s bare-import check script
+
+Definition of done:
+- the web app no longer depends on Vite/React/TypeScript for the user-facing app
+- the same core flow works: provider selection, camera capture, pose, retarget preview, recording, playback, GLB export
+- the app runs from a static HTML + JS + CSS serve
+- any behavior that is intentionally different from the React version is recorded as a known gap
+
+## Sprint 12 — QA, error catalog and correction
+
+Goal:
+- test the vanilla web app end to end
+- record what works and what breaks
+- fix the priority gaps that surfaced during QA
+
+Status: NOT STARTED — Sprint 11 is now built and served; Sprint 12 is the next validation pass.
+
+Start state for Sprint 12:
+- served app: `http://localhost:5173/` from `apps/web/dist/`
+- served bundle: vanilla app shell from `apps/web/scripts/build.cjs` after the close-out rebuild
+- runbook: `.freebuff/run.md`
+
+Tasks:
+- smoke test the entry and shell
+  - open the app from a static serve
+  - confirm the main panels render: motor de captura, camera selection, viewport, recording/clip panel, export action
+  - confirm no runtime console errors on idle load
+- test provider selection
+  - confirm `Auto` / MediaPipe selection UI works
+  - confirm unavailable providers are shown as unavailable
+  - confirm provider status text updates
+- test camera flow
+  - confirm camera enumeration and selection
+  - confirm camera permission request and denial paths
+  - confirm camera open/close behavior and cleanup
+  - confirm live preview when a stream is available
+- test pose + retarget
+  - confirm pose pipeline starts after camera is ready
+  - confirm retargeting drives the loaded character
+  - confirm skeleton/pose visualization overlays toggle correctly
+  - confirm low-confidence frames do not break the loop
+- test recording and clips
+  - confirm record / pause / stop behavior
+  - confirm clips are saved and listed
+  - confirm rename and remove work
+  - confirm playback drives the same pose path as live capture
+- test export
+  - confirm GLB export runs from a clip
+  - confirm export feedback appears inline
+  - confirm error handling is visible on failure
+- catalog issues
+  - record any broken flow, missing UI state, console errors, style regressions, or behavior gaps
+  - classify each issue as blocking, usability, or nice-to-have
+  - record the expected behavior vs current behavior for each issue
+
+Definition of done:
+- the vanilla web app has been exercised end to end
+- a written QA summary exists with what works and what does not
+- every blocking issue is tracked for Sprint 12 correction
+- non-blocking issues are recorded for later cleanup
 
 ## Optional future web tasks
 

@@ -224,14 +224,14 @@ export default function App() {
     setCaptureState("requesting-camera");
     setCameraReady(false);
 
-    const stream = await openCamera(selectedDeviceId);
+    const result = await openCamera(selectedDeviceId);
 
-    if (!stream) {
+    if (!result.stream) {
       setCaptureState("error");
       return;
     }
 
-    setViewportStream(stream);
+    setViewportStream(result.stream);
     setCaptureState("capturing");
     setCameraReady(true);
   }, [selectedDeviceId, setCaptureState, setCameraReady]);

@@ -1,0 +1,49 @@
+.mf-camera-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mf-camera-label {
+  font-size: 12px;
+  color: #b9b9c4;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mf-camera-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mf-camera-select {
+  flex: 1;
+  appearance: menulist;
+  background: #26262b;
+  color: #e7e7e7;
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.mf-camera-btn {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #26262b;
+  color: #e7e7e7;
+  cursor: pointer;
+}
+
+.mf-camera-status {
+  font-size: 12px;
+  color: #f0888a;
+}
+
+.mf-camera-ok {
+  font-size: 12px;
+  color: #7fe3b4;
+}

@@ -7,13 +7,22 @@ Force flag added to the web dev script to reduce stale module graph issues durin
 Current active preview URL: http://localhost:5173
 Process: launchd job `motionforge-static-server` (static file server serving apps/web/dist)
 Static server entry: /tmp/stay-alive-server.js
+Server log: .freebuff/preview-f1957dea-276c-4a43-b29a-4b2bf8c97765.log
+
+Sprint 11 status: IN PROGRESS — vanilla refactor of web app from Vite/React/TS to HTML5/JS/CSS.
+All components converted, build works, server serving on port 5173.
 
 Verified:
 - `apps/web` typecheck passes with `node node_modules/typescript/bin/tsc --noEmit`
 - production build passes with `node node_modules/vite/bin/vite.js build`
 - served bundle matches disk build (index.html points to current hashed assets; main JS byte-for-byte identical to dist)
 
-Static server start (when the preview needs to be re-launched from scratch):
+### Sprint 11 close-out notes
+
+- Build command: `cd apps/web && node scripts/build.cjs`
+- Build script now uses `tsconfig.esbuild.json` (created during Sprint 11 close-out).
+- One non-interface export from `src/store.ts` (`PlaybackState`) was wired so the clip panel and app shell bundle cleanly.
+- Static server start (when the preview needs to be re-launched from scratch):
 
 ```sh
 cd /Users/rennan/Documents/Websites_Work/MotionCapture
@@ -26,6 +35,13 @@ launchctl submit -l motionforge-static-server -- /bin/sh -c \
 The static server reads `apps/web/dist/index.html` and serves the hashed assets from
 `apps/web/dist/assets` on port 5173. When a new production build changes the asset hashes,
 rebuild and restart the static server.
+
+Current served bundle: vanilla web app built from `apps/web/scripts/build.cjs`.
+Serving entry: `apps/web/dist/index.html` -> `apps/web/dist/boot.js` -> `apps/web/dist/app.js`.
+Worker entry expected at runtime: `apps/web/dist/pose/pose.worker.js`.
+
+Runbook tip: if you rebuild the vanilla app, restart the static server after the build so the
+preview serves the refreshed dist, not the old in-memory page.
 
 ## Filesystem stability note
 
@@ -67,8 +83,8 @@ it. The launchd path is the one that survives this host.
 
 ## Current sprint status
 
-Web: Sprint 9 closed (GLB export + inline export-done confirmation in ClipPanel). Work
-resumed into Sprint 10 (web hardening and readiness) — doc rewritten to concrete web
-scope; camera/UX, worker reliability, and local-only clarity are IMPLEMENT, diagnostics
-is PARTIAL, WebGPU inference is PARTIAL (kept as the MediaPipe GPU→CPU fallback path),
-and quality profiles / cross-device matrix / hand-face / direct FBX on web are deferred.
+Web: Sprint 11 implemented and built — vanilla HTML5/JS/CSS app shell replaces Vite/React/TypeScript for the user-facing app.
+See docs/SPRINTS_WEB.md for the full Sprint 11 and Sprint 12 plan.
+
+Sprint 11 status: DONE (built, checked, serving-ready).
+Next: Sprint 12 — QA, error catalog and correction (not started).

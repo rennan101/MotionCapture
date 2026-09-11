@@ -1,12 +1,25 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Motion Forge - Web</title>
+    <link rel="stylesheet" href="/app.css" />
+    <link rel="stylesheet" href="/components/panel.css" />
+    <link rel="stylesheet" href="/components/status-bar.css" />
+    <link rel="stylesheet" href="/components/provider-selector.css" />
+    <link rel="stylesheet" href="/components/provider-status.css" />
+    <link rel="stylesheet" href="/components/camera-selector.css" />
+    <link rel="stylesheet" href="/components/record-controls.css" />
+    <link rel="stylesheet" href="/components/clip-panel.css" />
+    <link rel="stylesheet" href="/components/character-panel.css" />
+    <link rel="stylesheet" href="/components/viewport.css" />
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <div id="app" class="mf-app"></div>
+    <script type="importmap">
+      {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three-stdlib":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/","@mediapipe/tasks-vision":"https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/+esm","@motion-forge/pose":"./pose/pose-provider.js"}}
+    </script>
+    <script type="module" src="/boot.js"></script>
   </body>
 </html>

@@ -1,0 +1,25 @@
+.mf-provider-status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.mf-provider-status-label {
+  font-size: 12px;
+  color: #b9b9c4;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mf-provider-status-value {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.mf-provider-status-reason {
+  font-size: 11px;
+  color: #f0888a;
+  margin-left: auto;
+}
